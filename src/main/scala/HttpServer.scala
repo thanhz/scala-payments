@@ -1,7 +1,7 @@
 import cats.effect._
 import config.Config
 import db.Database
-import doobie.{ExecutionContexts, Transactor}
+import doobie.ExecutionContexts
 import org.http4s.implicits.http4sKleisliResponseSyntaxOptionT
 import org.http4s.server.blaze.BlazeServerBuilder
 import service.HelloService
@@ -22,7 +22,6 @@ object HttpServer {
   def create(): IO[ExitCode] = {
     dependencies.use {
       case (serverConfig, transactor) =>
-
         for {
           exitCode <- BlazeServerBuilder[IO](global)
             .bindHttp(serverConfig.port, serverConfig.host)
@@ -31,7 +30,6 @@ object HttpServer {
             .compile
             .drain.as(ExitCode.Success)
         } yield exitCode
-
     }
   }
 }

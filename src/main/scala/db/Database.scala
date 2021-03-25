@@ -1,9 +1,10 @@
 package db
 
-import scala.concurrent.ExecutionContext
 import cats.effect._
 import config.Config._
 import doobie.hikari.HikariTransactor
+
+import scala.concurrent.ExecutionContext
 
 object Database {
 
