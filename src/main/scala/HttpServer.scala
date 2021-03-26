@@ -4,7 +4,8 @@ import db.Database
 import doobie.ExecutionContexts
 import org.http4s.implicits.http4sKleisliResponseSyntaxOptionT
 import org.http4s.server.blaze.BlazeServerBuilder
-import service.HelloService
+import repository.UserRepository
+import service.UserService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -22,10 +23,12 @@ object HttpServer {
   def create(): IO[ExitCode] = {
     dependencies.use {
       case (serverConfig, transactor) =>
+        val userRepository = new UserRepository(transactor)
+
         for {
           exitCode <- BlazeServerBuilder[IO](global)
             .bindHttp(serverConfig.port, serverConfig.host)
-            .withHttpApp(new HelloService().routes.orNotFound)
+            .withHttpApp(new UserService(userRepository).routes.orNotFound)
             .serve
             .compile
             .drain.as(ExitCode.Success)

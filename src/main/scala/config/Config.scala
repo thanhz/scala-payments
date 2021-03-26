@@ -3,6 +3,7 @@ package config
 import cats.effect.{Blocker, ContextShift, IO, Resource}
 import com.typesafe.config.ConfigFactory
 import pureconfig.ConfigSource
+import pureconfig.generic.auto._
 import pureconfig.module.catseffect.syntax._
 
 object Config {
