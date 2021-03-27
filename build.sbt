@@ -24,7 +24,6 @@ libraryDependencies ++= Seq(
   "mysql" % "mysql-connector-java" % mySqlDriver,
 
   "org.tpolecat" %% "doobie-core" % doobieVersion,
-  "org.tpolecat" %% "doobie-specs2" % doobieVersion,
   "org.tpolecat" %% "doobie-hikari" % doobieVersion,
 
   "io.circe" %% "circe-core" % circeVersion,
