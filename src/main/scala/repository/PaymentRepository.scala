@@ -4,7 +4,7 @@ import cats.effect.IO
 import doobie.implicits.{toSqlInterpolator, _}
 import doobie.util.transactor.Transactor
 import fs2.Stream
-import model.{IncorrectAmountError, Payment, UserErrors, UserNotFoundError}
+import model.{IncorrectAmountError, Payment, PaymentErrors, PaymentNotFound}
 
 class PaymentRepository(transactor: Transactor[IO]) {
 
@@ -15,19 +15,19 @@ class PaymentRepository(transactor: Transactor[IO]) {
       .transact(transactor)
   }
 
-  def getPayment(id: Int): IO[Either[UserErrors, Payment]] = {
+  def getPayment(id: Int): IO[Either[PaymentErrors, Payment]] = {
     sql"SELECT * FROM payment WHERE id = $id"
       .query[Payment]
       .option
       .transact(transactor)
       .map {
         case Some(payment) => Right(payment)
-        case None => Left(UserNotFoundError)
+        case None => Left(PaymentNotFound)
       }
   }
 
-  def updatePayment(id: Int, payment: Payment): IO[Either[UserErrors, Payment]] = {
-    if(payment.amount <0) {
+  def updatePayment(id: Int, payment: Payment): IO[Either[PaymentErrors, Payment]] = {
+    if (payment.amount < 0) {
       IO.pure(Left(IncorrectAmountError))
     } else {
       sql"UPDATE payment SET amount=${payment.amount} WHERE id = $id"
@@ -39,7 +39,7 @@ class PaymentRepository(transactor: Transactor[IO]) {
             if (affectedRows == 1) {
               Right(payment.copy(id = Some(id)))
             } else {
-              Left(UserNotFoundError)
+              Left(PaymentNotFound)
             }
         }
     }
@@ -53,6 +53,20 @@ class PaymentRepository(transactor: Transactor[IO]) {
       .map {
         id => payment.copy(id = Some(id))
       }
+  }
 
+  def deletePayment(id: Long): IO[Either[PaymentErrors, Unit]] = {
+    sql"DELETE FROM payment WHERE id = $id"
+      .update
+      .run
+      .transact(transactor)
+      .map {
+        affectedRows =>
+          if (affectedRows == 1) {
+            Right(())
+          } else {
+            Left(PaymentNotFound)
+          }
+      }
   }
 }

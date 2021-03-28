@@ -87,6 +87,39 @@ class PaymentTestSpec extends AnyWordSpec with MockFactory with Matchers {
            "receiver": ${payment1.receiver}
          }"""
     }
+
+    "create a new payment" in {
+      val id = 1
+      val payment1 = Payment(Some(id), "SND1", 100, "REC1")
+      (repository.createPayment _).when(payment1).returns(IO.pure(payment1.copy(id = Some(id))))
+      val createdPayment =
+        json"""
+         {
+           "id": ${payment1.id},
+           "sender": ${payment1.sender},
+           "amount": ${payment1.amount},
+           "receiver": ${payment1.receiver}
+         }"""
+
+      val response = serve(Request[IO](POST, Uri.unsafeFromString(s"/payment")).withEntity(createdPayment))
+      response.status shouldBe Status.Created
+      response.as[Json].unsafeRunSync() shouldBe
+        json"""
+         {
+           "id": ${payment1.id},
+           "sender": ${payment1.sender},
+           "amount": ${payment1.amount},
+           "receiver": ${payment1.receiver}
+         }"""
+    }
+
+    "delete a todo" in {
+      val id = 1
+      (repository.deletePayment _).when(id).returns(IO.pure(Right(())))
+
+      val response = serve(Request[IO](DELETE, Uri.unsafeFromString(s"/payment/$id")))
+      response.status shouldBe Status.NoContent
+    }
   }
 
   private def serve(request: Request[IO]): Response[IO] = {

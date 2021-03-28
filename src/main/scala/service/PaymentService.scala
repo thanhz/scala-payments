@@ -24,14 +24,14 @@ class PaymentService(repository: PaymentRepository) extends Http4sDsl[IO] {
     case GET -> Root / "payment" / IntVar(id) =>
       for {
         user <- repository.getPayment(id)
-        result <- helper2(user)
+        result <- helper(user)
       } yield result
 
     case req @ PUT -> Root / "payment" / IntVar(id) =>
       for {
         payment <- req.as[Payment]
         update <- repository.updatePayment(id, payment)
-        result <- helper2(update)
+        result <- helper(update)
       } yield result
 
     case req @ POST -> Root / "payment" =>
@@ -41,12 +41,18 @@ class PaymentService(repository: PaymentRepository) extends Http4sDsl[IO] {
         response <- Created(createdPayment.asJson, Location(Uri.unsafeFromString(s"/payment/${createdPayment.id.get}")))
       } yield response
 
+    case DELETE -> Root / "payment" / LongVar(id) =>
+      repository.deletePayment(id).flatMap {
+        case Left(PaymentNotFound) => NotFound(PaymentNotFound.getMsg)
+        case Right(_) => NoContent()
+      }
+
   }
 
-  private def helper2(result: Either[UserErrors, Payment]) = {
+  private def helper(result: Either[PaymentErrors, Payment]) = {
     result match {
       case Left(IncorrectAmountError) => NotFound(IncorrectAmountError.getMsg)
-      case Left(UserNotFoundError) => NotFound(UserNotFoundError.getMsg)
+      case Left(PaymentNotFound) => NotFound(PaymentNotFound.getMsg)
       case Right(payment) => Ok(payment.asJson)
     }
   }
