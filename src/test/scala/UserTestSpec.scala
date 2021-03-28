@@ -28,7 +28,8 @@ class UserTestSpec extends AnyWordSpec with MockFactory with Matchers {
 
       val response = serve(Request[IO](GET, uri"/user"))
       response.status shouldBe Status.Ok
-      response.as[Json].unsafeRunSync() shouldBe json"""
+      response.as[Json].unsafeRunSync() shouldBe
+        json"""
         [
          {
            "id": ${user1.id},
@@ -41,6 +42,45 @@ class UserTestSpec extends AnyWordSpec with MockFactory with Matchers {
            "balance": ${user2.balance}
          }
         ]"""
+    }
+
+    "return a single user" in {
+      val id = 1
+      val user1 = User(id, "Bob", 999)
+      (repository.getUser _).when(id).returns(IO.pure(Right(user1)))
+
+      val response = serve(Request[IO](GET, Uri.unsafeFromString(s"/user/$id")))
+      response.status shouldBe Status.Ok
+      response.as[Json].unsafeRunSync() shouldBe
+        json"""
+         {
+           "id": ${user1.id},
+           "name": ${user1.name},
+           "balance": ${user1.balance}
+         }"""
+    }
+
+    "update a user" in {
+      val id = 1
+      val user1 = User(id, "Bob", 999)
+      (repository.updateBalance _).when(id, user1).returns(IO.pure(Right(user1.copy(id = id))))
+      val updateJson =
+        json"""
+         {
+           "id": ${user1.id},
+           "name": ${user1.name},
+           "balance": ${user1.balance}
+         }"""
+
+      val response = serve(Request[IO](PUT, Uri.unsafeFromString(s"/user/$id")).withEntity(updateJson))
+      response.status shouldBe Status.Ok
+      response.as[Json].unsafeRunSync() shouldBe
+        json"""
+         {
+           "id": ${user1.id},
+           "name": ${user1.name},
+           "balance": ${user1.balance}
+         }"""
     }
   }
 
