@@ -23,12 +23,11 @@ object HttpServer {
   def create(): IO[ExitCode] = {
     dependencies.use {
       case (serverConfig, transactor) =>
-        val userRepository = new PaymentRepository(transactor)
-
+        val paymentRepository = new PaymentRepository(transactor)
         for {
           exitCode <- BlazeServerBuilder[IO](global)
             .bindHttp(serverConfig.port, serverConfig.host)
-            .withHttpApp(new PaymentService(userRepository).routes.orNotFound)
+            .withHttpApp(new PaymentService(paymentRepository).routes.orNotFound)
             .serve
             .compile
             .drain.as(ExitCode.Success)
