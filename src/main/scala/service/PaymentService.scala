@@ -51,7 +51,7 @@ class PaymentService(repository: PaymentRepository) extends Http4sDsl[IO] {
 
   private def helper(result: Either[PaymentErrors, Payment]) = {
     result match {
-      case Left(IncorrectAmountError) => NotFound(IncorrectAmountError.getMsg)
+      case Left(IncorrectAmountError) => NotAcceptable(IncorrectAmountError.getMsg)
       case Left(PaymentNotFound) => NotFound(PaymentNotFound.getMsg)
       case Right(payment) => Ok(payment.asJson)
     }
