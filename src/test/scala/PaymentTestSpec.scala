@@ -17,7 +17,6 @@ class PaymentTestSpec extends AnyWordSpec with MockFactory with Matchers {
   private val repository = stub[PaymentRepository]
   private val service = new PaymentService(repository).routes
 
-
   "PaymentService" should {
     "get all payments" in {
       val payment1 = Payment(Some(1), "SND1", 100, "REC1")
@@ -113,7 +112,7 @@ class PaymentTestSpec extends AnyWordSpec with MockFactory with Matchers {
          }"""
     }
 
-    "delete a todo" in {
+    "delete a payment" in {
       val id = 1
       (repository.deletePayment _).when(id).returns(IO.pure(Right(())))
 
