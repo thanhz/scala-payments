@@ -3,6 +3,7 @@ package db
 import cats.effect._
 import config.Config._
 import doobie.hikari.HikariTransactor
+import org.flywaydb.core.Flyway
 
 import scala.concurrent.ExecutionContext
 
@@ -17,5 +18,15 @@ object Database {
       ec,
       blocker
     )
+
+  def setupDB(transactor: HikariTransactor[IO]): IO[Unit] = {
+    transactor.configure { dataSource =>
+      IO {
+        val flyWay = Flyway.configure().dataSource(dataSource).load()
+        //flyWay.baseline() Uncomment on first use to create schema history table
+        flyWay.migrate()
+      }
+    }
+  }
 
 }

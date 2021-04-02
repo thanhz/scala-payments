@@ -12,6 +12,7 @@ lazy val circeVersion = "0.13.0"
 lazy val scalaTestVersion = "3.2.5"
 lazy val scalaMockVersion = "5.1.0"
 lazy val logBackVersion = "1.2.3"
+lazy val flywayDbVersion = "7.7.1"
 
 libraryDependencies ++= Seq(
   "org.http4s" %% "http4s-dsl" % http4sVersion,
@@ -35,4 +36,6 @@ libraryDependencies ++= Seq(
   "org.scalamock" %% "scalamock" % scalaMockVersion % "test",
 
   "ch.qos.logback" % "logback-classic" % logBackVersion,
+
+  "org.flywaydb" % "flyway-core" % flywayDbVersion
 )

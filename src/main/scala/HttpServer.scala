@@ -20,11 +20,12 @@ object HttpServer {
     transactor <- Database.buildTransactor(config.database, ec, blocker)
   } yield (config.server, transactor)
 
-  def create(): IO[ExitCode] = {
+  def initialise(): IO[ExitCode] = {
     dependencies.use {
       case (serverConfig, transactor) =>
         val paymentRepository = new PaymentRepository(transactor)
         for {
+          _ <- Database.setupDB(transactor)
           exitCode <- BlazeServerBuilder[IO](global)
             .bindHttp(serverConfig.port, serverConfig.host)
             .withHttpApp(new PaymentService(paymentRepository).routes.orNotFound)
